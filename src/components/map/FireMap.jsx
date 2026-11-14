@@ -1,129 +1,148 @@
-import { useMemo, useState } from 'react';
-import { COLORS } from '../../lib/theme';
+import { useEffect, useMemo, useState } from 'react';
+import { CircleMarker, MapContainer, Popup, Rectangle, TileLayer, Tooltip, useMap } from 'react-leaflet';
+import { Maximize2 } from 'lucide-react';
+import 'leaflet/dist/leaflet.css';
+import './leaflet-theme.css';
+import { COLORS, SENSOR_META } from '../../lib/theme';
 import { fmtNum, monthLabel } from '../../lib/format';
-import { DATA_REGIONS } from '../../data/regions';
-import { Tooltip, useWidth } from '../charts/chartKit';
+import { DATA_REGIONS, REGION_BY_ID } from '../../data/regions';
+import { PopupCard } from './PopupCard';
 
 /**
- * Equirectangular point map. No basemap is bundled: only a lat/lon graticule and the
- * region boxes are drawn, so what you see is exactly the data plus coordinates.
+ * Basemap tiles.
+ * (comment block: CARTO with key, OSM fallback, key is visible in the client bundle)
  */
-export function FireMap({ points, bbox, regionId, height = 420 }) {
-  const [ref, width] = useWidth(720);
-  const [hover, setHover] = useState(null);
-  const [minLon, minLat, maxLon, maxLat] = bbox;
+const CARTO_KEY = import.meta.env.VITE_CARTO_API_KEY;
 
-  const pad = 24;
-  const spanLon = maxLon - minLon;
-  const spanLat = maxLat - minLat;
-  // Fit the box into the available width/height while keeping degrees square.
-  const scale = Math.min((width - pad * 2) / spanLon, (height - pad * 2) / spanLat);
-  const mapW = spanLon * scale;
-  const mapH = spanLat * scale;
-  const ox = (width - mapW) / 2;
-  const oy = (height - mapH) / 2;
-  const px = (lon) => ox + (lon - minLon) * scale;
-  const py = (lat) => oy + (maxLat - lat) * scale;
+const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
-  const gridStep = spanLon > 120 ? 30 : spanLon > 40 ? 10 : 5;
-  const lons = useMemo(() => {
-    const out = [];
-    for (let v = Math.ceil(minLon / gridStep) * gridStep; v <= maxLon; v += gridStep) out.push(v);
-    return out;
-  }, [minLon, maxLon, gridStep]);
-  const lats = useMemo(() => {
-    const out = [];
-    for (let v = Math.ceil(minLat / gridStep) * gridStep; v <= maxLat; v += gridStep) out.push(v);
-    return out;
-  }, [minLat, maxLat, gridStep]);
+const CARTO_STYLES = { dark: 'dark_all', standard: 'voyager' };
 
-  const showRegionBoxes = regionId === 'all';
-  const modisR = spanLon > 120 ? 3 : 4.5;
-  const viirsR = spanLon > 120 ? 1.6 : 2.4;
-  const hp = hover != null ? points[hover] : null;
+function resolveTiles(basemap) {
+  if (CARTO_KEY) {
+    const style = CARTO_STYLES[basemap] ?? CARTO_STYLES.standard;
+    return {
+      url: `https://basemaps.cartocdn.com/rastertiles/${style}/{z}/{x}/{y}.png?key=${encodeURIComponent(CARTO_KEY)}`,
+      attribution: `${OSM_ATTRIBUTION} &copy; <a href="https://carto.com/attributions">CARTO</a>`,
+      maxZoom: 19,
+      cssDim: false, // CARTO's dark style is already dark; don't invert it.
+    };
+  }
+  return {
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: OSM_ATTRIBUTION,
+    maxZoom: 19,
+    cssDim: basemap === 'dark',
+  };
+}
 
+const MARKER_STYLE = {
+  modis: { color: COLORS.modisStroke, weight: 2, opacity: 1, fillColor: COLORS.modis, fillOpacity: 0.25 },
+  viirs: { color: COLORS.viirsStroke, weight: 1, opacity: 1, fillColor: COLORS.viirs, fillOpacity: 0.9 },
+};
+
+/** MapContainer ignores prop changes after mount, so refit whenever bounds (or the reset button) change. */
+function FitBounds({ bounds, tick }) {
+  const map = useMap();
+  useEffect(() => {
+    map.fitBounds(bounds, { padding: [16, 16], animate: false });
+  }, [map, bounds, tick]);
+  return null;
+}
+
+function PointMarker({ p, radius, popupNote }) {
+  const meta = SENSOR_META[p.sensor];
   return (
-    <div ref={ref} className="relative overflow-hidden rounded-md border border-line bg-bg">
-      <svg width={width} height={height} role="img" aria-label={`Map of ${points.length} detections`} onMouseLeave={() => setHover(null)}>
-        <rect x={ox} y={oy} width={mapW} height={mapH} fill="#0c1526" stroke="#1f2d46" />
-        {lons.map((v) => (
-          <g key={`lon${v}`}>
-            <line x1={px(v)} x2={px(v)} y1={oy} y2={oy + mapH} stroke={COLORS.grid} strokeWidth="1" />
-            <text x={px(v)} y={oy + mapH + 14} textAnchor="middle" fontSize="10" fill={COLORS.axis} className="num">
-              {Math.abs(v)}°{v < 0 ? 'W' : v > 0 ? 'E' : ''}
-            </text>
-          </g>
-        ))}
-        {lats.map((v) => (
-          <g key={`lat${v}`}>
-            <line x1={ox} x2={ox + mapW} y1={py(v)} y2={py(v)} stroke={COLORS.grid} strokeWidth="1" />
-            <text x={ox - 6} y={py(v)} dy="0.32em" textAnchor="end" fontSize="10" fill={COLORS.axis} className="num">
-              {Math.abs(v)}°{v < 0 ? 'S' : v > 0 ? 'N' : ''}
-            </text>
-          </g>
-        ))}
-
-        {showRegionBoxes &&
-          DATA_REGIONS.map((r) => (
-            <g key={r.id}>
-              <rect
-                x={px(r.bbox[0])}
-                y={py(r.bbox[3])}
-                width={(r.bbox[2] - r.bbox[0]) * scale}
-                height={(r.bbox[3] - r.bbox[1]) * scale}
-                fill="none"
-                stroke="#2c3d5c"
-                strokeDasharray="3 3"
-              />
-            </g>
-          ))}
-
-        {points.map((p, i) =>
-          p.sensor === 'modis' ? (
-            <circle
-              key={p.id}
-              cx={px(p.lon)}
-              cy={py(p.lat)}
-              r={modisR}
-              fill="none"
-              stroke={COLORS.modis}
-              strokeWidth="1.25"
-              strokeOpacity="0.85"
-              onMouseEnter={() => setHover(i)}
-            />
-          ) : (
-            <circle
-              key={p.id}
-              cx={px(p.lon)}
-              cy={py(p.lat)}
-              r={viirsR}
-              fill={COLORS.viirs}
-              fillOpacity="0.8"
-              onMouseEnter={() => setHover(i)}
-            />
-          ),
-        )}
-        {hp && <circle cx={px(hp.lon)} cy={py(hp.lat)} r="8" fill="none" stroke="#e8eef8" strokeWidth="1.25" />}
-      </svg>
-
-      {hp && (
-        <Tooltip
-          x={px(hp.lon)}
-          y={py(hp.lat)}
-          containerWidth={width}
-          title={`${hp.sensor === 'modis' ? 'MODIS' : 'VIIRS'} detection · ${monthLabel(hp.month)}`}
+    <CircleMarker center={[p.lat, p.lon]} radius={radius} pathOptions={MARKER_STYLE[p.sensor]}>
+      <Tooltip direction="top" offset={[0, -4]} className="fire-tooltip">
+        {meta.name} · {monthLabel(p.month)}
+      </Tooltip>
+      <Popup className="fire-popup" minWidth={220}>
+        <PopupCard
+          title={`${meta.name} detection`}
+          note={popupNote}
           rows={[
-            { label: 'Location', color: 'transparent', value: `${fmtNum(hp.lat, 2)}°, ${fmtNum(hp.lon, 2)}°` },
-            { label: 'FRP (MW)', color: 'transparent', value: fmtNum(hp.frp, 1) },
-            { label: 'Confidence', color: 'transparent', value: hp.conf },
-            { label: 'Overpass', color: 'transparent', value: hp.dn === 'D' ? 'Day' : 'Night' },
+            ['Date', monthLabel(p.month)],
+            ['Region', REGION_BY_ID[p.region]?.name ?? p.region],
+            ['Location', `${fmtNum(p.lat, 2)}°, ${fmtNum(p.lon, 2)}°`],
+            ['FRP (MW)', fmtNum(p.frp, 1)],
+            ['Confidence', p.conf],
+            ['Overpass', p.dn === 'D' ? 'Day' : 'Night'],
+            ['Resolution', meta.resolution],
           ]}
         />
-      )}
+      </Popup>
+    </CircleMarker>
+  );
+}
 
-      {points.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center text-xs text-faint">
-          No detections for this selection. Enable a sensor or widen the date range.
+export function FireMap({
+  points = [],
+  cells = [],
+  bbox,
+  regionId = 'all',
+  height = 420,
+  basemap = 'dark',
+  popupNote,
+}) {
+  const [tick, setTick] = useState(0);
+  const tiles = useMemo(() => resolveTiles(basemap), [basemap]);
+
+  const [minLon, minLat, maxLon, maxLat] = bbox;
+  const bounds = useMemo(() => [[minLat, minLon], [maxLat, maxLon]], [minLon, minLat, maxLon, maxLat]);
+  const wide = maxLon - minLon > 120;
+  const modisR = wide ? 5 : 7;
+  const viirsR = wide ? 2.5 : 3.5;
+  const empty = points.length === 0 && cells.length === 0;
+
+  return (
+    <div
+      role="region"
+      aria-label={`Map showing ${cells.length ? `${cells.length} grid cells` : `${points.length} detections`}`}
+      className={`relative overflow-hidden rounded-md border border-line ${tiles.cssDim ? 'fire-map--dark' : 'fire-map--standard'}`}
+      style={{ height }}
+    >
+      <MapContainer
+        bounds={bounds}
+        preferCanvas
+        worldCopyJump
+        minZoom={2}
+        maxBounds={[[-85, -240], [85, 240]]}
+        scrollWheelZoom
+        style={{ height: '100%', width: '100%' }}
+      >
+        <TileLayer key={tiles.url} url={tiles.url} attribution={tiles.attribution} maxZoom={tiles.maxZoom} />
+        <FitBounds bounds={bounds} tick={tick} />
+
+        {regionId === 'all' &&
+          DATA_REGIONS.map((r) => (
+            <Rectangle
+              key={r.id}
+              bounds={[[r.bbox[1], r.bbox[0]], [r.bbox[3], r.bbox[2]]]}
+              pathOptions={{ color: '#93a3bf', weight: 1, dashArray: '4 4', fill: false, interactive: false }}
+            />
+          ))}
+
+        {cells.map((c) => (
+          <Rectangle key={c.id} bounds={c.bounds} pathOptions={c.style}>
+            {c.label && <Tooltip sticky className="fire-tooltip">{c.label}</Tooltip>}
+            {c.popup && <Popup className="fire-popup" minWidth={220}>{c.popup}</Popup>}
+          </Rectangle>
+        ))}
+
+        {points.map((p) => (
+          <PointMarker key={p.id} p={p} radius={p.sensor === 'modis' ? modisR : viirsR} popupNote={popupNote} />
+        ))}
+      </MapContainer>
+
+      <button type="button" onClick={() => setTick((t) => t + 1)} className="absolute right-3 top-3 z-[500] ...">
+        <Maximize2 size={13} strokeWidth={1.75} aria-hidden />
+        Reset view
+      </button>
+
+      {empty && (
+        <div className="pointer-events-none absolute inset-0 z-[400] ...">
+          No detections for this selection. Enable a source or widen the date range.
         </div>
       )}
     </div>

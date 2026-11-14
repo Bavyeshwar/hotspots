@@ -1,0 +1,62 @@
+/* Align Leaflet's default chrome with the dashboard's dark theme. */
+.leaflet-container {
+  background: #0c1526;
+  font-family: Inter, system-ui, sans-serif;
+  outline: none;
+}
+
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: #152036;
+  color: #e8eef8;
+  border-bottom-color: #2c3d5c;
+}
+.leaflet-bar a:hover {
+  background: #1f2d46;
+}
+.leaflet-bar {
+  border: 1px solid #2c3d5c;
+  box-shadow: none;
+}
+
+.leaflet-control-attribution {
+  background: rgba(10, 17, 31, 0.8) !important;
+  color: #93a3bf !important;
+  font-size: 10px;
+}
+.leaflet-control-attribution a {
+  color: #93a3bf;
+}
+
+.leaflet-tooltip.fire-tooltip {
+  background: #152036;
+  border: 1px solid #2c3d5c;
+  border-radius: 6px;
+  color: #e8eef8;
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.7);
+  padding: 8px 12px;
+  font-size: 12px;
+}
+.leaflet-tooltip-top.fire-tooltip::before {
+  border-top-color: #2c3d5c;
+}
+
+.fire-tooltip__title {
+  margin: 0 0 6px;
+  font-weight: 500;
+}
+.fire-tooltip__grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 4px 16px;
+  margin: 0;
+}
+.fire-tooltip__grid dt {
+  color: #93a3bf;
+}
+.fire-tooltip__grid dd {
+  margin: 0;
+  text-align: right;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
