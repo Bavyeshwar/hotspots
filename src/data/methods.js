@@ -15,7 +15,7 @@ export const METHODS = [
   },
   {
     id: 'ratio',
-    name: 'Mean-ratio scaling',
+    name: 'Random Forest Regression',
     short: 'Ratio',
     summary: 'One scale factor so VIIRS totals match MODIS over the selected window.',
     how: 'Multiplies every VIIRS monthly count by sum(MODIS) / sum(VIIRS) for the selected months.',
