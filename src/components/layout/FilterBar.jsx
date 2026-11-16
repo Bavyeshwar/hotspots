@@ -1,9 +1,7 @@
 import { RotateCcw } from 'lucide-react';
 import { useDashboard } from '../../context/DashboardContext';
-import { REGIONS } from '../../data/regions';
-import { METHODS } from '../../data/methods';
 import { Button } from '../ui/Button';
-import { MonthField, SelectField } from '../ui/Fields';
+import { MonthField } from '../ui/Fields';
 
 export function FilterBar() {
   const { filters, setFilter, resetFilters, isDefault, dataset } = useDashboard();
@@ -13,26 +11,26 @@ export function FilterBar() {
 
   return (
     <div className="border-b border-line bg-surface/95 backdrop-blur-sm" role="search" aria-label="Filters">
-      <div className="mx-auto grid max-w-7xl grid-cols-2 items-end gap-3 px-4 py-3 sm:px-6 lg:grid-cols-[1.4fr_1fr_1fr_1.4fr_auto] lg:px-8">
-        <SelectField
-          className="col-span-2 lg:col-span-1"
-          label="Region"
-          value={filters.region}
-          onChange={(v) => setFilter('region', v)}
-          options={REGIONS.map((r) => ({ value: r.id, label: r.name }))}
-        />
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-3 px-4 py-3 sm:grid-cols-2 sm:px-6 xl:grid-cols-5 lg:px-8">
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <p className="eyebrow">Region</p>
+          <div className="control flex w-full items-center" aria-label="Region">
+            United States
+          </div>
+        </div>
         <MonthField label="From" value={filters.start} min={min} max={max} onChange={(v) => setFilter('start', v)} />
         <MonthField label="To" value={filters.end} min={min} max={max} onChange={(v) => setFilter('end', v)} />
-        <SelectField
-          className="col-span-2 lg:col-span-1"
-          label="Harmonization"
-          value={filters.method}
-          onChange={(v) => setFilter('method', v)}
-          options={METHODS.map((m) => ({ value: m.id, label: m.name }))}
-        />
-        <Button variant="ghost" icon={RotateCcw} onClick={resetFilters} disabled={isDefault} className="col-span-2 lg:col-span-1">
-          Reset
-        </Button>
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <p className="eyebrow">Model</p>
+          <div className="control flex w-full items-center truncate" aria-label="Model">
+            Random Forest Regression
+          </div>
+        </div>
+        <div className="flex min-w-0 items-end sm:col-span-2 xl:col-span-1">
+          <Button variant="ghost" icon={RotateCcw} onClick={resetFilters} disabled={isDefault} className="w-full">
+            Reset
+          </Button>
+        </div>
       </div>
     </div>
   );

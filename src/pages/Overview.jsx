@@ -9,27 +9,26 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { Stat } from '../components/ui/Stat';
 import { Badge } from '../components/ui/Badge';
 import { ToggleChip } from '../components/ui/Fields';
-import { ReliabilityBadge } from '../components/ui/ReliabilityBadge';
 import { DataTable } from '../components/ui/DataTable';
 import { FireMap } from '../components/map/FireMap';
 import { LineChart } from '../components/charts/LineChart';
 
 export default function Overview() {
-  const { filters, regionInfo, rows, metrics, quality, reliability, points, sensors, toggleSensor, regionSummary } = useDashboard();
+  const { filters, regionInfo, rows, metrics, quality, points, sensors, toggleSensor, regionSummary } = useDashboard();
   const method = METHOD_BY_ID[filters.method];
 
   const totalModis = rows.reduce((s, r) => s + r.modis, 0);
   const totalViirsH = rows.reduce((s, r) => s + r.viirsH, 0);
 
-  const mapBox = regionInfo.id === 'all' ? [-130, -45, 160, 72] : regionInfo.bbox;
+  const mapBox = regionInfo.bbox;
 
   return (
     <div className="space-y-8">
       <PageHeader
         eyebrow="Overview"
         title="Active fire detections"
-        description={`${regionInfo.name}, ${monthLabel(filters.start)} to ${monthLabel(filters.end)}. VIIRS counts shown with “${method.name}” harmonization.`}
-        actions={<ReliabilityBadge reliability={reliability} />}
+        description={`NASA FIRMS detections for ${regionInfo.name}, ${monthLabel(filters.start)} to ${monthLabel(filters.end)}.`}
+        actions=""
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

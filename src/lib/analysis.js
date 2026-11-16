@@ -108,12 +108,13 @@ export function sliceMonthly(dataset, regionId, start, end) {
     const row = { month: parts[0].month, modis: 0, viirs: 0, q: {} };
     ['modis', 'viirs'].forEach((s) => {
       row[s] = sum(parts.map((p) => p[s]));
-      const w = row[s] || 1;
-      const agg = { high: 0, nominal: 0, low: 0, coverage: 0 };
-      parts.forEach((p) => {
-        Object.keys(agg).forEach((k) => {
-          agg[k] += (p.q[s][k] * p[s]) / w;
-        });
+      const agg = {};
+      ['high', 'nominal', 'low', 'coverage'].forEach((k) => {
+        const available = parts.filter((p) => p.q[s][k] != null);
+        const availableWeight = sum(available.map((p) => p[s]));
+        agg[k] = availableWeight
+          ? sum(available.map((p) => p.q[s][k] * p[s])) / availableWeight
+          : null;
       });
       row.q[s] = agg;
     });
@@ -150,11 +151,13 @@ export function seasonal(rows) {
 export function qualityOf(rows, sensor) {
   const total = sum(rows.map((r) => r[sensor]));
   if (!total) return null;
-  const agg = { high: 0, nominal: 0, low: 0, coverage: 0 };
-  rows.forEach((r) => {
-    Object.keys(agg).forEach((k) => {
-      agg[k] += (r.q[sensor][k] * r[sensor]) / total;
-    });
+  const agg = {};
+  ['high', 'nominal', 'low', 'coverage'].forEach((k) => {
+    const available = rows.filter((r) => r.q[sensor][k] != null);
+    const availableTotal = sum(available.map((r) => r[sensor]));
+    agg[k] = availableTotal
+      ? sum(available.map((r) => r.q[sensor][k] * r[sensor])) / availableTotal
+      : null;
   });
   return agg;
 }

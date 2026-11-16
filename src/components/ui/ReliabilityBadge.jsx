@@ -1,17 +1,19 @@
-import { CircleCheck, CircleAlert, TriangleAlert } from 'lucide-react';
 import { Badge } from './Badge';
 
-const MAP = {
-  good: { tone: 'ok', icon: CircleCheck },
-  moderate: { tone: 'warn', icon: CircleAlert },
-  limited: { tone: 'danger', icon: TriangleAlert },
+const TONE_BY_LEVEL = {
+  good: 'ok',
+  moderate: 'warn',
+  limited: 'neutral',
 };
 
 export function ReliabilityBadge({ reliability }) {
-  const { tone, icon } = MAP[reliability.level];
   return (
-    <Badge tone={tone} icon={icon} title={reliability.reason}>
-      Reliability: {reliability.label}
+    <Badge
+      tone={TONE_BY_LEVEL[reliability.level] ?? 'neutral'}
+      title={reliability.reason}
+      aria-label={`Reliability: ${reliability.label}. ${reliability.reason}`}
+    >
+      {reliability.label} reliability
     </Badge>
   );
 }

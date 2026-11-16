@@ -15,11 +15,13 @@ import {
 
 const DashboardContext = createContext(null);
 
-const DEFAULTS = { region: 'all', start: '2018-01', end: '2025-12', method: 'ratio' };
-
 export function DashboardProvider({ children }) {
   const dataset = useMemo(() => loadDataset(), []);
-  const [filters, setFilters] = useState(DEFAULTS);
+  const defaults = useMemo(
+    () => ({ region: 'us', start: dataset.months[0], end: dataset.months[dataset.months.length - 1], method: 'ratio' }),
+    [dataset],
+  );
+  const [filters, setFilters] = useState(defaults);
   const [sensors, setSensors] = useState({ modis: true, viirs: true });
 
   const value = useMemo(() => {
@@ -59,11 +61,11 @@ export function DashboardProvider({ children }) {
       reliability: reliabilityOf(m, rows.length),
       points: filterPoints(dataset.points, region, lo, hi, sensors),
       setFilter: (key, val) => setFilters((f) => ({ ...f, [key]: val })),
-      resetFilters: () => setFilters(DEFAULTS),
+      resetFilters: () => setFilters(defaults),
       toggleSensor: (id) => setSensors((s) => ({ ...s, [id]: !s[id] })),
-      isDefault: JSON.stringify(filters) === JSON.stringify(DEFAULTS),
+      isDefault: JSON.stringify(filters) === JSON.stringify(defaults),
     };
-  }, [dataset, filters, sensors]);
+  }, [dataset, filters, sensors, defaults]);
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
 }

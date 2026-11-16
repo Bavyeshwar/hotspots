@@ -1,17 +1,17 @@
 import { NavLink } from 'react-router-dom';
-import { Flame, GitCompare, History, LayoutDashboard, ShieldCheck, SlidersHorizontal, X } from 'lucide-react';
+import { Activity, Flame, GitCompare, History, LayoutDashboard, ShieldCheck, X } from 'lucide-react';
 
 export const NAV = [
   { to: '/', label: 'Overview', icon: LayoutDashboard },
   { to: '/comparison', label: 'Sensor comparison', icon: GitCompare },
   { to: '/history', label: 'Historical activity', icon: History },
-  { to: '/methods', label: 'Harmonization', icon: SlidersHorizontal },
+  { to: '/methods', label: 'Model Results', icon: Activity },
   { to: '/quality', label: 'Data quality', icon: ShieldCheck },
 ];
 
 export function Sidebar({ onNavigate, onClose, mobile = false }) {
   return (
-    <nav aria-label="Primary" className="flex h-full flex-col bg-surface">
+    <nav aria-label="Primary" className="flex h-full flex-col bg-surface z-[500]">
       <div className="flex h-16 items-center justify-between border-b border-line px-5">
         <div className="flex items-center gap-3">
           <span className="flex h-8 w-8 items-center justify-center rounded-md border border-line-strong bg-raised text-ember-400">

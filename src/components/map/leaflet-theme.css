@@ -3,6 +3,7 @@
   background: #0c1526;
   font-family: Inter, system-ui, sans-serif;
   outline: none;
+  z-index: 0 !important;
 }
 
 .leaflet-bar a,

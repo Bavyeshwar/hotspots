@@ -26,7 +26,7 @@ export function AppShell() {
       <div className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-surface px-4 lg:hidden">
         <div className="flex items-center gap-2.5">
           <Flame size={16} className="text-ember-400" aria-hidden />
-          <span className="text-sm font-semibold">Fire Observations</span>
+          <span className="text-sm font-semibold">Fire Data Observations</span>
         </div>
         <button type="button" onClick={() => setOpen(true)} aria-label="Open navigation" className="rounded-md p-2 text-muted hover:bg-raised hover:text-ink">
           <Menu size={18} />
@@ -41,9 +41,11 @@ export function AppShell() {
         </div>
       )}
 
-      <div className="z-20 lg:sticky lg:top-0">
-        <FilterBar />
-      </div>
+      {pathname !== '/methods' && (
+        <div className="z-20 lg:sticky lg:top-0">
+          <FilterBar />
+        </div>
+      )}
       <DataNotice />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

@@ -5,9 +5,9 @@ import { fmtNum, fmtPct, monthLabel, monthShort } from '../lib/format';
 import { Card, CardBody, CardHeader } from '../components/ui/Card';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Stat } from '../components/ui/Stat';
+import { ReliabilityBadge } from '../components/ui/ReliabilityBadge';
 import { SensorKey } from '../components/ui/Badge';
 import { ConfidenceBar } from '../components/ui/ConfidenceBar';
-import { ReliabilityBadge } from '../components/ui/ReliabilityBadge';
 import { DataTable } from '../components/ui/DataTable';
 import { LineChart } from '../components/charts/LineChart';
 
@@ -40,8 +40,8 @@ export default function Quality() {
       <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         <Stat label="Months selected" value={String(months)} hint={months < 12 ? 'Under 12: limited reliability' : 'At least 12'} />
         <Stat label="Sensor correlation" value={fmtNum(metrics.r, 2)} hint="Monthly counts" />
-        <Stat label="MODIS coverage" accent="cyan" value={fmtPct(quality.modis?.coverage)} hint="Simulated valid-observation share" />
-        <Stat label="VIIRS coverage" accent="ember" value={fmtPct(quality.viirs?.coverage)} hint="Simulated valid-observation share" />
+        <Stat label="MODIS coverage" accent="cyan" value={fmtPct(quality.modis?.coverage)} hint="Not included in FIRMS export" />
+        <Stat label="VIIRS coverage" accent="ember" value={fmtPct(quality.viirs?.coverage)} hint="Not included in FIRMS export" />
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
@@ -60,10 +60,10 @@ export default function Quality() {
       </div>
 
       <Card>
-        <CardHeader icon={Gauge} title="Quality over time" subtitle="High-confidence share and observation coverage by month." />
+        <CardHeader icon={Gauge} title="Quality over time" subtitle="High-confidence share by month." />
         <CardBody>
           <LineChart
-            ariaLabel="High-confidence share and coverage by month"
+            ariaLabel="High-confidence share by month"
             categories={rows.map((r) => r.month)}
             categoryLabel={monthShort}
             tooltipTitle={monthLabel}
@@ -74,8 +74,6 @@ export default function Quality() {
             series={[
               { id: 'mh', label: 'MODIS high-confidence', color: SENSOR_META.modis.color, values: rows.map((r) => r.q.modis.high) },
               { id: 'vh', label: 'VIIRS high-confidence', color: SENSOR_META.viirs.color, values: rows.map((r) => r.q.viirs.high) },
-              { id: 'mc', label: 'MODIS coverage', color: SENSOR_META.modis.color, dashed: true, values: rows.map((r) => r.q.modis.coverage) },
-              { id: 'vc', label: 'VIIRS coverage', color: SENSOR_META.viirs.color, dashed: true, values: rows.map((r) => r.q.viirs.coverage) },
             ]}
           />
         </CardBody>
@@ -107,8 +105,8 @@ export default function Quality() {
               measure of how many fires were missed.
             </p>
             <p>
-              <span className="text-ink">Coverage</span> here is a simulated stand-in for the share of valid observations (for example,
-              not obscured by cloud). With real data, derive it from the product&apos;s own quality information.
+              <span className="text-ink">Coverage</span> is unavailable because the supplied FIRMS detection exports do not include
+              valid-observation totals.
             </p>
             <p>
               <span className="text-ink">Detections are not area burned.</span> Counts depend on overpass timing, resolution and cloud

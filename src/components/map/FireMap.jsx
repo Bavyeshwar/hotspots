@@ -135,7 +135,7 @@ export function FireMap({
         ))}
       </MapContainer>
 
-      <button type="button" onClick={() => setTick((t) => t + 1)} className="absolute right-3 top-3 z-[500] ...">
+      <button type="button" onClick={() => setTick((t) => t + 1)} className="absolute right-3 top-3 ...">
         <Maximize2 size={13} strokeWidth={1.75} aria-hidden />
         Reset view
       </button>
