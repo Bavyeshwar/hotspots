@@ -1,0 +1,84 @@
+{
+    "model": "Random Forest Regressor",
+    "dataset": "NASA FIRMS 2026",
+    "metrics": {
+        "mae": 4.542059924265529,
+        "rmse": 6.7115230280023965,
+        "r2": 0.9061470536213855
+    },
+    "dataset_size": {
+        "total_rows": 713294,
+        "training_rows": 499305,
+        "testing_rows": 213989
+    },
+    "feature_importance": [
+        {
+            "feature": "acq_time",
+            "importance": 0.3251414976461897
+        },
+        {
+            "feature": "frp",
+            "importance": 0.23963377205866257
+        },
+        {
+            "feature": "confidence",
+            "importance": 0.16128932809458216
+        },
+        {
+            "feature": "daynight",
+            "importance": 0.11086520515232674
+        },
+        {
+            "feature": "bright_t31",
+            "importance": 0.07279672342621869
+        },
+        {
+            "feature": "scan",
+            "importance": 0.03109291055581989
+        },
+        {
+            "feature": "track",
+            "importance": 0.02425107142155911
+        },
+        {
+            "feature": "sensor",
+            "importance": 0.022216462459726798
+        },
+        {
+            "feature": "longitude",
+            "importance": 0.006035683178033288
+        },
+        {
+            "feature": "day_of_year",
+            "importance": 0.0028098484832093256
+        },
+        {
+            "feature": "latitude",
+            "importance": 0.002155657954600559
+        },
+        {
+            "feature": "month",
+            "importance": 0.0005523902008736645
+        },
+        {
+            "feature": "cat__satellite_N20",
+            "importance": 0.0005460352874267654
+        },
+        {
+            "feature": "cat__satellite_N21",
+            "importance": 0.0005321257798449947
+        },
+        {
+            "feature": "cat__satellite_Terra",
+            "importance": 4.1653740622620275e-05
+        },
+        {
+            "feature": "cat__satellite_Aqua",
+            "importance": 3.963456030327887e-05
+        },
+        {
+            "feature": "year",
+            "importance": 0.0
+        }
+    ]
+}
