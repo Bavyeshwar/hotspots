@@ -46,7 +46,7 @@ export default function Comparison() {
             height={300}
             series={[
               { id: 'modis', label: 'MODIS', color: SENSOR_META.modis.color, values: rows.map((r) => r.modis) },
-              { id: 'viirs', label: `VIIRS (${method.short.toLowerCase()})`, color: SENSOR_META.viirs.color, values: rows.map((r) => r.viirsH) },
+              { id: 'viirs', label: `VIIRS (model)`, color: SENSOR_META.viirs.color, values: rows.map((r) => r.viirsH) },
               ...(filters.method !== 'none'
                 ? [{ id: 'raw', label: 'VIIRS (raw)', color: '#62738f', dashed: true, values: rows.map((r) => r.viirs) }]
                 : []),
